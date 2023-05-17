@@ -4,6 +4,7 @@ import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
+import java.io.Console;
 import java.nio.charset.StandardCharsets;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
@@ -19,8 +20,18 @@ public class EncryptionExample {
     private static final int TAG_LENGTH = 16;
 
     public static void main(String[] args) throws Exception {
-        String passphrase = sanitizeInput("MySecretPassphrase");
-        String plaintext = sanitizeInput("This is the message to be encrypted.");
+        Console console = System.console();
+        if (console == null) {
+            System.err.println("No console available. Please run this program from a command-line terminal.");
+            System.exit(1);
+        }
+
+        char[] passphraseChars = console.readPassword("Enter passphrase: ");
+        String passphrase = sanitizeInput(new String(passphraseChars));
+        Arrays.fill(passphraseChars, ' '); // Clear the passphrase from memory
+
+        String plaintext = console.readLine("Enter the message to be encrypted: ");
+        plaintext = sanitizeInput(plaintext);
 
         byte[] salt = generateSalt();
         SecretKey secretKey = deriveAESKey(passphrase, salt);
