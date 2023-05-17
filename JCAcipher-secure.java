@@ -26,33 +26,41 @@ public class EncryptionExample {
             System.exit(1);
         }
 
+        // Read passphrase securely
         char[] passphraseChars = console.readPassword("Enter passphrase: ");
         String passphrase = sanitizeInput(new String(passphraseChars));
         Arrays.fill(passphraseChars, ' '); // Clear the passphrase from memory
 
+        // Read plaintext message
         String plaintext = console.readLine("Enter the message to be encrypted: ");
         plaintext = sanitizeInput(plaintext);
 
+        // Generate salt and derive secret key
         byte[] salt = generateSalt();
         SecretKey secretKey = deriveAESKey(passphrase, salt);
 
+        // Generate nonce and perform encryption
         byte[] nonce = generateNonce();
         byte[] ciphertext = encrypt(plaintext, secretKey, nonce);
         String decryptedText = decrypt(ciphertext, secretKey, nonce);
 
+        // Display results
         System.out.println("Plaintext: " + encode(plaintext));
         System.out.println("Ciphertext: " + encode(ciphertext));
         System.out.println("Decrypted text: " + encode(decryptedText));
     }
 
+    // Sanitize input to prevent potential vulnerabilities
     private static String sanitizeInput(String input) {
         return input.replaceAll("[<>\"']", "");
     }
 
+    // Base64 encode the input string
     private static String encode(String input) {
         return Base64.getEncoder().encodeToString(input.getBytes(StandardCharsets.UTF_8));
     }
 
+    // Generate a random salt
     private static byte[] generateSalt() {
         byte[] salt = new byte[SALT_LENGTH];
         SecureRandom secureRandom = SecureRandom.getInstanceStrong();
@@ -60,6 +68,7 @@ public class EncryptionExample {
         return salt;
     }
 
+    // Generate a random nonce
     private static byte[] generateNonce() {
         byte[] nonce = new byte[NONCE_LENGTH];
         SecureRandom secureRandom = SecureRandom.getInstanceStrong();
@@ -67,6 +76,7 @@ public class EncryptionExample {
         return nonce;
     }
 
+    // Derive AES key from passphrase and salt using PBKDF2
     private static SecretKey deriveAESKey(String passphrase, byte[] salt)
             throws NoSuchAlgorithmException, InvalidKeySpecException {
         PBEKeySpec spec = new PBEKeySpec(passphrase.toCharArray(), salt, ITERATIONS, KEY_SIZE);
@@ -75,6 +85,7 @@ public class EncryptionExample {
         return new SecretKeySpec(tmp.getEncoded(), ALGORITHM.split("/")[0]);
     }
 
+    // Encrypt the plaintext using AES-GCM algorithm
     private static byte[] encrypt(String plaintext, SecretKey secretKey, byte[] nonce) throws Exception {
         Cipher cipher = Cipher.getInstance(ALGORITHM);
         GCMParameterSpec spec = new GCMParameterSpec(TAG_LENGTH * 8, nonce);
@@ -82,6 +93,7 @@ public class EncryptionExample {
         return cipher.doFinal(plaintext.getBytes(StandardCharsets.UTF_8));
     }
 
+    // Decrypt the ciphertext using AES-GCM algorithm
     private static String decrypt(byte[] ciphertext, SecretKey secretKey, byte[] nonce) throws Exception {
         Cipher cipher = Cipher.getInstance(ALGORITHM);
         GCMParameterSpec spec = new GCMParameterSpec(TAG_LENGTH * 8, nonce);
