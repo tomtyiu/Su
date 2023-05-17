@@ -13,7 +13,7 @@ import java.util.Base64;
 public class EncryptionExample {
     private static final String ALGORITHM = "AES/GCM/NoPadding";
     private static final int KEY_SIZE = 256;
-    private static final int ITERATIONS = 10000;
+    private static final int ITERATIONS = 100_000;
     private static final int SALT_LENGTH = 16;
     private static final int NONCE_LENGTH = 12;
     private static final int TAG_LENGTH = 16;
@@ -44,14 +44,14 @@ public class EncryptionExample {
 
     private static byte[] generateSalt() {
         byte[] salt = new byte[SALT_LENGTH];
-        SecureRandom secureRandom = new SecureRandom();
+        SecureRandom secureRandom = SecureRandom.getInstanceStrong();
         secureRandom.nextBytes(salt);
         return salt;
     }
 
     private static byte[] generateNonce() {
         byte[] nonce = new byte[NONCE_LENGTH];
-        SecureRandom secureRandom = new SecureRandom();
+        SecureRandom secureRandom = SecureRandom.getInstanceStrong();
         secureRandom.nextBytes(nonce);
         return nonce;
     }
